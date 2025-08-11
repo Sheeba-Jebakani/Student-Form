@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Student Info Form</title>
+<style>
+  /* Reset and base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #e3f2fd;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Container */
+  form, #page2 {
+    background: white;
+    padding: 30px 40px;
+    max-width: 480px;
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 12px 25px rgba(33, 150, 243, 0.25);
+  }
+
+  h2 {
+    margin-bottom: 25px;
+    color: #1976d2;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #90caf9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="number"]:focus,
+  input[type="date"]:focus {
+    border-color: #1565c0;
+    outline: none;
+    box-shadow: 0 0 6px #1565c0aa;
+  }
+
+  /* Invalid input styles with shake animation */
+  input.invalid {
+    border-color: #e53935 !important;
+    animation: shake 0.3s;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0) }
+    20%, 60% { transform: translateX(-6px) }
+    40%, 80% { transform: translateX(6px) }
+  }
+
+  button {
+    width: 100%;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 14px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background-color 0.25s ease;
+    margin-top: 10px;
+  }
+  button:hover {
+    background-color: #0d47a1;
+  }
+
+  /* Table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+  th, td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
+  th {
+    background-color: #1976d2;
+    color: white;
+    font-weight: 700;
+  }
+  tr:nth-child(even) {
+    background-color: #f1f9ff;
+  }
+
+  /* Hidden class */
+  .hidden {
+    display: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 520px) {
+    body {
+      padding: 20px 10px;
+    }
+    form, #page2 {
+      padding: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Page 1: Form -->
+<form id="page1" onsubmit="event.preventDefault(); submitForm();">
+  <h2>Student Info</h2>
+  <label>Name: <input type="text" id="name" /></label>
+  <label>Age: <input type="number" id="age" /></label>
+  <label>Date of Birth: <input type="date" id="dob" /></label>
+  <label>Email: <input type="email" id="email" /></label>
+  <label>College: <input type="text" id="college" /></label>
+  <label>Degree: <input type="text" id="degree" /></label>
+  <label>Percentage: <input type="number" step="0.01" id="percentage" /></label>
+  <label>Year of Passing: <input type="number" id="year" /></label>
+  <button type="submit">Submit</button>
+</form>
+
+<!-- Page 2: Result -->
+<div id="page2" class="hidden">
+  <h2>Submitted Data</h2>
+  <table id="resultTable"></table>
+  <button onclick="goBack()">Go Back</button>
+</div>
+
+<script>
+function submitForm() {
+    let inputs = document.querySelectorAll('#page1 input');
+    let valid = true;
+
+    // Remove all previous invalid highlights first
+    inputs.forEach(input => input.classList.remove("invalid"));
+
+    // Basic empty check
+    inputs.forEach(input => {
+        if (!input.value.trim()) {
+            input.classList.add("invalid");
+            valid = false;
+        }
+    });
+    if (!valid) return;
+
+    // Get values
+    const name = document.getElementById('name').value.trim();
+    const age = parseInt(document.getElementById('age').value, 10);
+    const dob = document.getElementById('dob').value;
+    const email = document.getElementById('email').value.trim();
+    const college = document.getElementById('college').value.trim();
+    const degree = document.getElementById('degree').value.trim();
+    const percentage = parseFloat(document.getElementById('percentage').value);
+    const year = parseInt(document.getElementById('year').value, 10);
+
+    // Age validation
+    if (isNaN(age) || age < 1 || age > 120) {
+        document.getElementById('age').classList.add("invalid");
+        valid = false;
+    }
+
+    // Percentage validation
+    if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+        document.getElementById('percentage').classList.add("invalid");
+        valid = false;
+    }
+
+    // Year validation (between 1950 and current year)
+    const currentYear = new Date().getFullYear();
+    if (isNaN(year) || year < 1950 || year > currentYear) {
+        document.getElementById('year').classList.add("invalid");
+        valid = false;
+    }
+
+    // Email validation using regex (simple)
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+        document.getElementById('email').classList.add("invalid");
+        valid = false;
+    }
+
+    // DOB validation: must be a valid date and not in the future
+    const dobDate = new Date(dob);
+    if (!dob || dobDate.toString() === "Invalid Date" || dobDate > new Date()) {
+        document.getElementById('dob').classList.add("invalid");
+        valid = false;
+    }
+
+    if (!valid) return;
+
+    let data = {
+        Name: name,
+        Age: age,
+        DOB: dobDate.toLocaleDateString(),
+        Email: email,
+        College: college,
+        Degree: degree,
+        Percentage: percentage,
+        Year: year
+    };
+
+    let tableHTML = '';
+    for (let key in data) {
+        tableHTML += `<tr><th>${key}</th><td>${data[key]}</td></tr>`;
+    }
+    document.getElementById('resultTable').innerHTML = tableHTML;
+
+    document.getElementById('page1').classList.add('hidden');
+    document.getElementById('page2').classList.remove('hidden');
+}
+
+function goBack() {
+  document.getElementById('page2').classList.add('hidden');
+  document.getElementById('page1').classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>
